@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background: #f3f4f6; }
+        .chat { max-width: 600px; height: 80vh; margin: 5vh auto; display: flex;
+                flex-direction: column; background: white; border-radius: 12px;
+                box-shadow: 0 4px 16px #0002; overflow: hidden; }
+        header { padding: 18px; color: white; background: #2563eb; font-size: 1.2rem; }
+        #messages { flex: 1; padding: 20px; overflow-y: auto; }
+        .message { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px;
+                   background: #e5e7eb; width: fit-content; }
+        form { display: flex; gap: 8px; padding: 14px; border-top: 1px solid #ddd; }
+        input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; }
+        button { padding: 12px 18px; color: white; background: #2563eb;
+                 border: 0; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <main class="chat">
+        <header>Chat Window</header>
+        <section id="messages"><div class="message">Hello, how are you doing today?</div></section>
+        <form onsubmit="sendMessage(event)">
+            <input id="message" placeholder="Type a message..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </main>
+    <script>
+        function sendMessage(event) {
+            event.preventDefault();
+            const input = document.getElementById('message');
+            if (!input.value.trim()) return;
+            const message = document.createElement('div');
+            message.className = 'message';
+            message.textContent = input.value;
+            document.getElementById('messages').appendChild(message);
+            input.value = '';
+        }
+    </script>
+</body>
+</html>
