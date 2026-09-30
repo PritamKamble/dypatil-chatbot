@@ -32,12 +32,25 @@
         function sendMessage(event) {
             event.preventDefault();
             const input = document.getElementById('message');
-            if (!input.value.trim()) return;
+            const messageText = input.value.trim();
+            if (!messageText) return;
             const message = document.createElement('div');
             message.className = 'message';
-            message.textContent = input.value;
+            message.textContent = messageText;
             document.getElementById('messages').appendChild(message);
             input.value = '';
+
+            // Send message to the server
+            fetch('/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: messageText })
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Failed to submit message');
+                    return response.json();
+                })
+                .catch(error => console.error(error));
         }
     </script>
 </body>
