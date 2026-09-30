@@ -10,9 +10,13 @@
                 flex-direction: column; background: white; border-radius: 12px;
                 box-shadow: 0 4px 16px #0002; overflow: hidden; }
         header { padding: 18px; color: white; background: #2563eb; font-size: 1.2rem; }
-        #messages { flex: 1; padding: 20px; overflow-y: auto; }
-        .message { margin-bottom: 12px; padding: 10px 14px; border-radius: 12px;
-                   background: #e5e7eb; width: fit-content; }
+        #messages { flex: 1; min-height: 0; padding: 20px; overflow-y: auto;
+                display: flex; flex-direction: column; gap: 12px; }
+        .message { max-width: 80%; padding: 10px 14px; border-radius: 12px;
+               background: #e5e7eb; overflow-wrap: anywhere; }
+        .message.assistant { align-self: flex-start; }
+        .message.user { align-self: flex-end; color: white; background: #2563eb; }
+        .message.error { align-self: flex-start; color: #991b1b; background: #fee2e2; }
         form { display: flex; gap: 8px; padding: 14px; border-top: 1px solid #ddd; }
         input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 8px; }
         button { padding: 12px 18px; color: white; background: #2563eb;
@@ -22,35 +26,63 @@
 <body>
     <main class="chat">
         <header>Chat Window</header>
-        <section id="messages"><div class="message">Hello, how are you doing today?</div></section>
+        <section id="messages"><div class="message assistant">Hello, how are you doing today?</div></section>
         <form onsubmit="sendMessage(event)">
             <input id="message" placeholder="Type a message..." autocomplete="off">
             <button type="submit">Send</button>
         </form>
     </main>
     <script>
+        const conversation = [
+            { role: 'assistant', content: 'Hello, how are you doing today?' }
+        ];
+
         function sendMessage(event) {
             event.preventDefault();
             const input = document.getElementById('message');
             const messageText = input.value.trim();
             if (!messageText) return;
+
+            const form = event.currentTarget;
+            const sendButton = form.querySelector('button[type="submit"]');
+            sendButton.disabled = true;
+            conversation.push({ role: 'user', content: messageText });
+
             const message = document.createElement('div');
-            message.className = 'message';
+            message.className = 'message user';
             message.textContent = messageText;
             document.getElementById('messages').appendChild(message);
             input.value = '';
 
-            // Send message to the server
             fetch('/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: messageText })
+                body: JSON.stringify({ messages: conversation })
             })
-                .then(response => {
-                    if (!response.ok) throw new Error('Failed to submit message');
-                    return response.json();
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        throw new Error(data.detail || 'Failed to submit message');
+                    }
+                    return data;
                 })
-                .catch(error => console.error(error));
+                .then(data => {
+                    conversation.push({ role: 'assistant', content: data.message });
+                    const reply = document.createElement('div');
+                    reply.className = 'message assistant';
+                    reply.textContent = data.message;
+                    document.getElementById('messages').appendChild(reply);
+                })
+                .catch(error => {
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'message error';
+                    errorMessage.textContent = `Error: ${error.message}`;
+                    document.getElementById('messages').appendChild(errorMessage);
+                })
+                .finally(() => {
+                    sendButton.disabled = false;
+                    input.focus();
+                });
         }
     </script>
 </body>

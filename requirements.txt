@@ -3,3 +3,5 @@ python-dotenv
 starlette
 pydantic
 fastapi[standard]
+langchain
+langchain-google-genai
