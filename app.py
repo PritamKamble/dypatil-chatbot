@@ -1,16 +1,14 @@
-from openai import OpenAI
 from dotenv import load_dotenv
 import os
 load_dotenv()
 
+from fastapi import FastAPI
 
-client = OpenAI(
-    api_key=os.environ.get("GROQ_API_KEY"),
-    base_url="https://api.groq.com/openai/v1",
-)
-while True:
-    response = client.responses.create(
-        input=input('Enter your message:'),
-        model="openai/gpt-oss-20b",
-    )
-    print(response.output_text)
+app = FastAPI()
+
+@app.get("/hello")
+def read_root():
+    return { 
+        "message": "Hello, How are you doing today?"
+        }
+
